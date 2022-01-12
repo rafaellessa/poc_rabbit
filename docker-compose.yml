@@ -1,0 +1,163 @@
+version: "3.7"
+services: 
+  cart:
+    image: rafaellessa/cart:${DOCKER_IMAGE_TAG:-latest}
+    volumes:
+      - /app/node_modules/
+    ports: 
+      - "${CART_PORT-3001}:${CART_PORT:-3001}"
+    logging: 
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: "10m"
+    environment:
+      #Rabbit MQ
+      RABBITMQ_HOST: poc-rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+
+      # Mongo
+      MONGODB_HOST: poc-mongodb
+      MONGODB_PORT: 27017
+      MONGODB_DATABASE: ${MONGODB_DATABASE}
+      MONGODB_USERNAME: ${MONGODB_USERNAME}
+      MONGODB_PASSWORD: ${MONGODB_PASSWORD}
+
+      # Redis
+      REDIS_HOST: poc-redis
+      REDIS_PORT: 6379
+      REDIS_CACHE_DB: 0
+      REDIS_DB: 0
+      REDIS_PREFIX: "CachePoc:"
+      CACHE_PREFIX: "POC:"
+      REDIS_QUEUE: queue_poc
+
+      # Ambiente do node
+      CART_ENV: ${CART_ENV}
+      CART_PORT: ${CART_PORT}
+
+    depends_on:
+      - "poc-rabbitmq"
+      - "poc-mongodb"
+      - "poc-redis"
+    networks:
+      - rede-poc
+
+    restart: unless-stopped
+  
+  checkout:
+    image: rafaellessa/checkout:${DOCKER_IMAGE_TAG:-latest}
+    volumes:
+      - /app/node_modules/
+    ports: 
+      - "${CHECKOUT_PORT-3003}:${CHECKOUT_PORT:-3003}"
+    logging: 
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: "10m"
+    environment:
+      #Rabbit MQ
+      RABBITMQ_HOST: poc-rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+
+      # Mongo
+      MONGODB_HOST: poc-mongodb
+      MONGODB_PORT: 27017
+      MONGODB_DATABASE: ${MONGODB_DATABASE}
+      MONGODB_USERNAME: ${MONGODB_USERNAME}
+      MONGODB_PASSWORD: ${MONGODB_PASSWORD}
+
+      # Redis
+      REDIS_HOST: poc-redis
+      REDIS_PORT: 6379
+      REDIS_CACHE_DB: 0
+      REDIS_DB: 0
+      REDIS_PREFIX: "CachePoc:"
+      CACHE_PREFIX: "POC:"
+      REDIS_QUEUE: queue_poc
+
+      # Ambiente do node
+      CHECKOUT_ENV: ${CHECKOUT_ENV}
+      CHECKOUT_PORT: ${CHECKOUT_PORT}
+
+    depends_on:
+      - "poc-rabbitmq"
+      - "poc-mongodb"
+      - "poc-redis"
+    networks:
+      - rede-poc
+
+    restart: unless-stopped
+
+  poc-mongodb:
+    image: rafaellessa/poc-mongodb:${DOCKER_IMAGE_TAG:-latest}
+    volumes:
+      - mongodb:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+
+      MONGO_INITDB_DATABASE: ${MONGODB_DATABASE}
+      MONGO_INITDB_USERNAME: ${MONGODB_USERNAME}
+      MONGO_INITDB_PASSWORD: ${MONGODB_PASSWORD}
+    networks:
+      - rede-poc
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: "10m"
+    restart: unless-stopped
+  
+  # Rabbit MQ
+  poc-rabbitmq:
+    image: rabbitmq:3.8-management-alpine
+    # O hostname é definido unicamente pois o RabbitMQ monta a pasta storage
+    # utilizando o hostname, então para manter os dados persistentes precisa
+    # manter o nome da pasta
+    hostname: rabbit
+    environment:
+      RABBITMQ_NODENAME: poc
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq:/var/lib/rabbitmq
+    networks:
+      - "rede-poc"
+    ports:
+      - "5673:5672"
+      - "15673:15672"
+    restart: unless-stopped
+
+  poc-redis:
+    image: redis
+    container_name: poc-redis
+    networks:
+      - rede-poc
+
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "2"
+        max-size: "10m"
+
+    restart: always
+volumes:
+  mongodb:
+    driver: local
+
+  rabbitmq:
+    driver: local
+
+  uploads: 
+    driver: local
+
+networks:
+  rede-poc:
+    external: true
+

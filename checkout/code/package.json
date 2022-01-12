@@ -1,0 +1,29 @@
+{
+  "name": "checkout",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "forever -c 'node --inspect=0.0.0.0' -w --watchDirectory /app --watchIgnore /app/node_modules /app/index.js",
+    "start-production": "forever -c 'node --inspect=0.0.0.0' -w --watchDirectory /app --watchIgnore /app/node_modules /app/index.js",
+    "start-develop": "forever -c 'node --inspect=0.0.0.0' -w --watchDirectory /app --watchIgnore /app/node_modules /app/index.js",
+    "start-testing": "forever -c 'node --inspect=0.0.0.0' -w --watchDirectory /app --watchIgnore /app/node_modules /app/index.js"
+  },
+
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "amqplib": "^0.8.0",
+    "express": "^4.17.2",
+    "forever": "^4.0.2",
+    "ioredis": "^4.28.3",
+    "joi": "^17.5.0",
+    "lodash": "^4.17.21",
+    "log4js": "^6.3.0",
+    "mongoose": "^6.1.6",
+    "mongoose-paginate-v2": "^1.5.0",
+    "uuid": "^8.3.2"
+  }
+}

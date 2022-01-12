@@ -1,0 +1,29 @@
+version: "3.7"
+services:
+  cart:
+    ports:
+      #debug ports
+      - "9230:9229"
+    build:
+      context: ./cart
+      dockerfile: Dockerfile
+    volumes:
+      - ./cart/code:/app
+  # API em Node JS
+  checkout:
+    ports:
+      #debug ports
+      - "9231:9229"
+    build:
+      context: ./checkout
+      dockerfile: Dockerfile
+    volumes:
+      - ./checkout/code:/app  
+
+  poc-mongodb:
+    build:
+      context: ./poc-mongodb
+      dockerfile: Dockerfile
+    ports:
+      - "27017:27017"
+
